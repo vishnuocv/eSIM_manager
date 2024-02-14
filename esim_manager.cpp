@@ -103,7 +103,14 @@ int main(int argc, char* argv[]) {
     GtkWidget* window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     gtk_window_set_title(GTK_WINDOW(window), "eSIM Profile Manager");
     gtk_container_set_border_width(GTK_CONTAINER(window), 40);
-    gtk_widget_set_size_request(window, 800, 800);
+
+//    gtk_widget_set_size_request(window, 800, 800);
+    // Set the initial size of the window based on the screen's width and height
+    GdkScreen* screen = gtk_window_get_screen(GTK_WINDOW(window));
+    gint screenWidth = gdk_screen_get_width(screen);
+    gint screenHeight = gdk_screen_get_height(screen);
+    gtk_widget_set_size_request(window, screenWidth / 2, screenHeight / 2);
+    
     gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
 
@@ -121,10 +128,15 @@ int main(int argc, char* argv[]) {
     gtk_box_pack_start(GTK_BOX(vbox), buttonBox, FALSE, FALSE, 0);
 
     for (int i = 0; i < 8; ++i) {
-        button_labels_widgets[i] = gtk_button_new_with_label(button_labels[i]);
-        gtk_widget_set_size_request(button_labels_widgets[i], 200, 100);
-        g_signal_connect(button_labels_widgets[i], "clicked", G_CALLBACK(button_clicked), NULL);
-        gtk_container_add(GTK_CONTAINER(buttonBox), button_labels_widgets[i]);
+        if (strcmp(button_labels[i], "") == 0) {
+            GtkWidget* gapLabel = gtk_label_new("");
+            gtk_widget_set_size_request(gapLabel, screenWidth / 100, screenHeight / 200); // Adjust the size as needed
+            gtk_container_add(GTK_CONTAINER(buttonBox), gapLabel);
+        } else {
+            button_labels_widgets[i] = gtk_button_new_with_label(button_labels[i]);
+            g_signal_connect(button_labels_widgets[i], "clicked", G_CALLBACK(button_clicked), NULL);
+            gtk_container_add(GTK_CONTAINER(buttonBox), button_labels_widgets[i]);
+        }
     }
 
     output_window = gtk_text_view_new();
@@ -133,7 +145,7 @@ int main(int argc, char* argv[]) {
     GtkWidget* scrolledWindow = gtk_scrolled_window_new(NULL, NULL);
     gtk_container_add(GTK_CONTAINER(scrolledWindow), output_window);
     gtk_box_pack_start(GTK_BOX(vbox), scrolledWindow, TRUE, TRUE, 0);
-    gtk_widget_set_size_request(scrolledWindow, -1, 400);
+    gtk_widget_set_size_request(scrolledWindow, -1, screenHeight / 4);
 
     // Apply CSS to the window for background color and button styling
     GtkCssProvider *provider = gtk_css_provider_new();
